@@ -7,6 +7,12 @@
   "dependencies": {
     "beepbeep": "^1.2.2",
     "external-ip": "^2.1.1",
-    "moment": "^2.23.0"
+    "moment": "^2.23.0",
+    "read-last-lines": "^1.6.0"
+  },
+  "scripts": {
+    "install": "node install.js",
+    "uninstall": "node uninstall.js",
+    "start": "node index.js"
   }
 }

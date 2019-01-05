@@ -2,35 +2,46 @@ const getIP = require('external-ip')();
 const fs = require('fs');
 const beep = require('beepbeep');
 const moment = require('moment');
+const readLastLines = require('read-last-lines');
+const config = require('./config.json');
 
-var line
-var lastIP
+var lastIP;
+var filepath = config.filepath;
+var interval = config.checkInterval || 50000;
 
-function addToFile(string) {
-  fs.appendFile('ips.csv', string, function (err) {
+function log(message) {
+  console.log(moment().format("D/MM/YYYY,HH:mm:ss : ") + message);
+}
+
+function addToFile(string, path = "ips.csv") {
+  fs.appendFile(path, string, function (err) {
     if (err) {
-      beep(3, 1000);
-      console.log(moment().format("D/MM/YYYY,HH:mm:ss") + " : " + err)
+      beep(3, 900);
+      log("Exiting logger - " + err);
+      process.exit(1);
+    } else {
+      log('Saved IP to ' + path);
+      beep(2, 1000);
     }
-
-    console.log(moment().format("D/MM/YYYY,HH:mm:ss") + " : " + 'Saved!');
-    beep(2, 1000);
   });
 }
 
-addToFile("Logger started,"+moment().format("D/MM/YYYY,HH:mm:ss")+"\n");
+readLastLines.read(filepath, 1)
+.then(function(line){
+        lastIP = line.split(',')[0];
+        log("Logger resume");
+      })
+.catch(function(err){
+  log("Logger started");
+});
 
 const x = setInterval(() => {
-
   getIP((err, ip) => {
     if (err) {
-        line = "fail ";
-        addToFile(line);
-        console.log(moment().format("D/MM/YYYY,HH:mm:ss") + " : " + err)
+        log(err)
     } else if (ip !== lastIP){
-      lastIP = ip
-      line = ip+","+moment().format("D/MM/YYYY,HH:mm:ss")+"\n";
-      addToFile(line);
+      lastIP = ip;
+      addToFile(ip+","+moment().format("D/MM/YYYY,HH:mm:ss")+"\n", filepath);
     }
   });
-}, 30000);
+}, interval);
