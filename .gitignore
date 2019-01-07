@@ -84,3 +84,6 @@ typings/
 
 # windows service exe, etc
 daemon/
+
+# visual studio code settings, etc.
+.vscode/
