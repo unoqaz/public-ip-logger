@@ -3,17 +3,24 @@ const fs = require('fs');
 const beep = require('beepbeep');
 const moment = require('moment');
 const readLastLines = require('read-last-lines');
-const config = require('./config.json');
 
-var lastIP;
-var filepath = config.filepath;
-var interval = config.checkInterval || 50000;
+var filepath;
+var interval;
+try {
+  const config = require('./config.json');
+  filepath = config.filepath;
+  interval = config.checkInterval || 50000;
+} catch (error) {
+  filepath = "ips.csv";
+  interval = 50000;
+  log(error + " : default configuration will be used.")
+}
 
 function log(message) {
   console.log(moment().format("D/MM/YYYY,HH:mm:ss : ") + message);
 }
 
-function addToFile(string, path = "ips.csv") {
+function addToFile(string, path) {
   fs.appendFile(path, string, function (err) {
     if (err) {
       beep(3, 900);
@@ -26,10 +33,12 @@ function addToFile(string, path = "ips.csv") {
   });
 }
 
+var lastIP;
+
 readLastLines.read(filepath, 1)
 .then(function(line){
         lastIP = line.split(',')[0];
-        log("Logger resume");
+        log("Logger resumed");
       })
 .catch(function(err){
   log("Logger started");
@@ -38,7 +47,7 @@ readLastLines.read(filepath, 1)
 const x = setInterval(() => {
   getIP((err, ip) => {
     if (err) {
-        log(err)
+        log("failed to get ip")
     } else if (ip !== lastIP){
       lastIP = ip;
       addToFile(ip+","+moment().format("D/MM/YYYY,HH:mm:ss")+"\n", filepath);
