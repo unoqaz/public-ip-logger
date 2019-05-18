@@ -1,6 +1,5 @@
 const getIP = require('external-ip')();
 const fs = require('fs');
-const beep = require('beepbeep');
 const moment = require('moment');
 const readLastLines = require('read-last-lines');
 
@@ -23,12 +22,10 @@ function log(message) {
 function addToFile(string, path) {
   fs.appendFile(path, string, function (err) {
     if (err) {
-      beep(3, 900);
       log("Exiting logger - " + err);
       process.exit(1);
     } else {
       log('Saved IP to ' + path);
-      beep(2, 1000);
     }
   });
 }
@@ -47,7 +44,7 @@ readLastLines.read(filepath, 1)
 const x = setInterval(() => {
   getIP((err, ip) => {
     if (err) {
-        log("failed to get ip")
+        log("failed to get ip: " + err)
     } else if (ip !== lastIP){
       lastIP = ip;
       addToFile(ip+","+moment().format("D/MM/YYYY,HH:mm:ss")+"\n", filepath);
